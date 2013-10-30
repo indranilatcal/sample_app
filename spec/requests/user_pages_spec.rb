@@ -34,13 +34,7 @@ describe "User pages" do
 
 				before { click_button submit }
 
-				it { should have_content('Sign up') }
-				it { should have_content('errors') }
-				it { should have_content("Name can't be blank") }
-				it { should have_content("Email can't be blank") }
-				it { should have_content("Email is invalid") }
-				it { should have_content("Password can't be blank") }
-				it { should have_content("Password is too short (minimum is 6 characters)") }
+				it { should show_signup_validation_errors }
 			end
 		end
 
@@ -49,25 +43,26 @@ describe "User pages" do
 			let(:name) { "Example User" }
 			let(:email) { "user@example.com" }
 
-			before do
-				fill_in "Name",         with: name
-        		fill_in "Email",        with: "user@example.com"
-        		fill_in "Password",     with: "foobar"
-        		fill_in "Confirmation", with: "foobar"
-			end
+			before { fill_signupinfo name: name, email: email,
+				password: "foobar", password_confirmation: "foobar" }
 
 			it "should create a user" do
 				expect { click_button submit }.to change(User, :count).by(1)
 			end
 
 			describe "after saving the user" do
-
 				before { click_button submit }
 				let(:user) { User.find_by(email: email) }
-
+				
+				it { should have_link('Sign out') }
 				it { should have_title(user.name) }
 				it { should have_content("Welcome to the Sample App!") }
-				it { should have_selector('div.alert.alert-success', text: "Welcome") }
+				it { should have_success_message('Welcome') }
+
+				describe "followed by signout" do
+					before { click_link "Sign out" }
+					it { should have_link('Sign in') }
+				end
 			end
 		end
 	end
